@@ -12,9 +12,37 @@ const (
 	NonWorking DayType = "noWork"     // "Нерабочий" рабочий день :-).
 )
 
+type WeekDay string
+
+const (
+	Monday    WeekDay = "mon"
+	Tuesday   WeekDay = "tue"
+	Wednesday WeekDay = "wed"
+	Thursday  WeekDay = "thu"
+	Friday    WeekDay = "fri"
+	Saturday  WeekDay = "sat"
+	Sunday    WeekDay = "sun"
+)
+
+func NewWeekDay(wd time.Weekday) (WeekDay, bool) {
+	// @formatter:off
+	switch wd {
+	case time.Monday:    return Monday,    true
+	case time.Tuesday:   return Tuesday,   true
+	case time.Wednesday: return Wednesday, true
+	case time.Thursday:  return Thursday,  true
+	case time.Friday:    return Friday,    true
+	case time.Saturday:  return Saturday,  true
+	case time.Sunday:    return Sunday,    true
+	default:             return "",        false
+	}
+	// @formatter:on
+}
+
 type Day struct {
+	WeekDay WeekDay `json:"weekDay,omitempty"`
 	Working bool    `json:"working"`
-	Type    DayType `json:"type"`
+	Type    DayType `json:"type,omitempty"`
 	Desc    string  `json:"desc,omitempty"`
 }
 

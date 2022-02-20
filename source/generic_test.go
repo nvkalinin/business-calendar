@@ -1,12 +1,8 @@
 package source
 
 import (
-	"encoding/csv"
 	"github.com/nvkalinin/business-calendar/store"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"os"
-	"strings"
 	"testing"
 	"time"
 )
@@ -14,55 +10,84 @@ import (
 func TestGeneric_GetYear(t *testing.T) {
 	generic := NewGeneric()
 	year := generic.GetYear(2022)
-	expYear := yearFromCsv(t, "testdata/generic_2022.csv")
-	assert.Equal(t, expYear, year)
-}
 
-func yearFromCsv(t *testing.T, filename string) store.Months {
-	f, err := os.Open(filename)
-	require.NoError(t, err)
+	expJanuary := store.Days{
+		1: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		2: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-	r := csv.NewReader(f)
-	r.Comma = '|'
-	r.Comment = '#'
+		3: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		4: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		5: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		6: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		7: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		8: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		9: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-	rows, err := r.ReadAll()
-	require.NoError(t, err)
+		10: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		11: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		12: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		13: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		14: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		15: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		16: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-	cal := make(store.Months, 12)
-	for rowNum, row := range rows[1:] {
-		mon := time.Month(rowNum + 1)
+		17: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		18: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		19: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		20: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		21: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		22: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		23: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-		cal[mon] = make(store.Days, 31)
-		for colNum, rawVal := range row[1:] {
-			day := colNum + 1
+		24: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		25: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		26: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		27: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		28: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		29: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		30: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-			dayData, exists := dayFromCsv(rawVal)
-			if !exists {
-				continue
-			}
+		31: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+	}
+	expDecember := store.Days{
+		1: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		2: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		3: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		4: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
 
-			cal[mon][day] = dayData
-		}
+		5:  store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		6:  store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		7:  store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		8:  store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		9:  store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		10: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		11: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
+
+		12: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		13: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		14: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		15: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		16: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		17: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		18: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
+
+		19: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		20: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		21: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		22: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		23: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		24: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
+		25: store.Day{WeekDay: "sun", Working: false, Type: store.Weekend},
+
+		26: store.Day{WeekDay: "mon", Working: true, Type: store.Normal},
+		27: store.Day{WeekDay: "tue", Working: true, Type: store.Normal},
+		28: store.Day{WeekDay: "wed", Working: true, Type: store.Normal},
+		29: store.Day{WeekDay: "thu", Working: true, Type: store.Normal},
+		30: store.Day{WeekDay: "fri", Working: true, Type: store.Normal},
+		31: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
 	}
 
-	return cal
-}
-
-func dayFromCsv(rawVal string) (store.Day, bool) {
-	val := strings.TrimSpace(rawVal)
-	if val == "-" {
-		// Дня нет в месяце
-		return store.Day{}, false
-	}
-
-	dayType := store.Normal
-	if val == "X" {
-		dayType = store.Weekend
-	}
-
-	return store.Day{
-		Working: dayType == store.Normal,
-		Type:    dayType,
-	}, true
+	assert.Equal(t, 12, len(year))
+	assert.Equal(t, expJanuary, year[time.January])
+	assert.Equal(t, expDecember, year[time.December])
 }

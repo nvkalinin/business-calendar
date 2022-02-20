@@ -31,7 +31,10 @@ func (g *Generic) GetYear(targetYear int) store.Months {
 			dayType = store.Weekend
 		}
 
+		weekDay, _ := store.NewWeekDay(date.Weekday())
+
 		cal[month][day] = store.Day{
+			WeekDay: weekDay,
 			Working: !isWeekend,
 			Type:    dayType,
 		}
