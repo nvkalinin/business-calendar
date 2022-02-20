@@ -1,5 +1,7 @@
 package store
 
+import "time"
+
 type DayType string
 
 const (
@@ -16,20 +18,20 @@ type Day struct {
 	Desc    string  `json:"desc,omitempty"`
 }
 
-type Month map[int]Day
+type Days map[int]Day
 
-type Year map[int]Month
+type Months map[time.Month]Days
 
-func (m Month) Copy() Month {
-	mCopy := make(Month, len(m))
+func (m Days) Copy() Days {
+	mCopy := make(Days, len(m))
 	for dayNum, day := range m {
 		mCopy[dayNum] = day
 	}
 	return mCopy
 }
 
-func (y Year) Copy() Year {
-	yCopy := make(Year, len(y))
+func (y Months) Copy() Months {
+	yCopy := make(Months, len(y))
 	for monNum, month := range y {
 		yCopy[monNum] = month.Copy()
 	}

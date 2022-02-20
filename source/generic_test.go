@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestGeneric_GetYear(t *testing.T) {
@@ -17,7 +18,7 @@ func TestGeneric_GetYear(t *testing.T) {
 	assert.Equal(t, expYear, year)
 }
 
-func yearFromCsv(t *testing.T, filename string) store.Year {
+func yearFromCsv(t *testing.T, filename string) store.Months {
 	f, err := os.Open(filename)
 	require.NoError(t, err)
 
@@ -28,11 +29,11 @@ func yearFromCsv(t *testing.T, filename string) store.Year {
 	rows, err := r.ReadAll()
 	require.NoError(t, err)
 
-	cal := make(store.Year, 12)
+	cal := make(store.Months, 12)
 	for rowNum, row := range rows[1:] {
-		mon := rowNum + 1
+		mon := time.Month(rowNum + 1)
 
-		cal[mon] = make(store.Month, 31)
+		cal[mon] = make(store.Days, 31)
 		for colNum, rawVal := range row[1:] {
 			day := colNum + 1
 

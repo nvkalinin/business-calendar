@@ -17,12 +17,12 @@ func NewGeneric() *Generic {
 	}
 }
 
-func (g *Generic) GetYear(targetYear int) store.Year {
+func (g *Generic) GetYear(targetYear int) store.Months {
 	cal := makeEmptyYear()
 
 	date := time.Date(targetYear, time.January, 1, 0, 0, 0, 0, time.UTC)
 	for date.Year() == targetYear {
-		month := int(date.Month())
+		month := date.Month()
 		day := date.Day()
 
 		isWeekend := g.isWeekend(date.Weekday())
@@ -42,10 +42,10 @@ func (g *Generic) GetYear(targetYear int) store.Year {
 	return cal
 }
 
-func makeEmptyYear() store.Year {
-	cal := make(store.Year, 12)
+func makeEmptyYear() store.Months {
+	cal := make(store.Months, 12)
 	for mon := 1; mon <= 12; mon++ {
-		cal[mon] = make(store.Month, 31)
+		cal[time.Month(mon)] = make(store.Days, 31)
 	}
 	return cal
 }

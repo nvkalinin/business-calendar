@@ -6,8 +6,8 @@ import (
 )
 
 func TestYear_Copy(t *testing.T) {
-	yOrig := Year{
-		2022: Month{
+	yOrig := Months{
+		2022: Days{
 			1: {Working: true, Type: Holiday},
 		},
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func TestMemory_FindDay(t *testing.T) {
-	mem := Memory{store: map[int]store.Year{
+	mem := Memory{store: map[int]store.Months{
 		2022: {
 			1: {
 				2: {Working: false, Type: store.Holiday},
@@ -39,7 +39,7 @@ func TestMemory_FindDay(t *testing.T) {
 }
 
 func TestMemory_FindMonth(t *testing.T) {
-	mem := Memory{store: map[int]store.Year{
+	mem := Memory{store: map[int]store.Months{
 		2022: {
 			1: {
 				2: {Working: false, Type: store.Holiday},
@@ -49,7 +49,7 @@ func TestMemory_FindMonth(t *testing.T) {
 
 	// Нормальный сценарий.
 	mon, ok := mem.FindMonth(2022, 1)
-	expMon := store.Month{
+	expMon := store.Days{
 		2: {Working: false, Type: store.Holiday},
 	}
 	assert.Equal(t, expMon, mon)
@@ -70,7 +70,7 @@ func TestMemory_FindMonth(t *testing.T) {
 }
 
 func TestMemory_FindYear(t *testing.T) {
-	mem := Memory{store: map[int]store.Year{
+	mem := Memory{store: map[int]store.Months{
 		2022: {
 			1: {
 				2: {Working: false, Type: store.Holiday},
@@ -80,7 +80,7 @@ func TestMemory_FindYear(t *testing.T) {
 
 	// Нормальный сценарий.
 	year, ok := mem.FindYear(2022)
-	expYear := store.Year{
+	expYear := store.Months{
 		1: {
 			2: {Working: false, Type: store.Holiday},
 		},
@@ -101,7 +101,7 @@ func TestMemory_FindYear(t *testing.T) {
 func TestMemory_PutYear(t *testing.T) {
 	mem := NewMemory()
 
-	yearToSave := store.Year{
+	yearToSave := store.Months{
 		1: {
 			2: {Working: false, Type: store.Holiday},
 		},
@@ -109,7 +109,7 @@ func TestMemory_PutYear(t *testing.T) {
 	err := mem.PutYear(2022, yearToSave)
 	assert.NoError(t, err)
 
-	expMem := &Memory{store: map[int]store.Year{
+	expMem := &Memory{store: map[int]store.Months{
 		2022: {
 			1: {
 				2: {Working: false, Type: store.Holiday},
