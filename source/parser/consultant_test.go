@@ -28,7 +28,7 @@ func TestConsultant_ParseYear(t *testing.T) {
 		baseURL: s.URL,
 	}
 
-	year, err := consultant.ParseYear(2021)
+	year, err := consultant.GetYear(2021)
 	assert.NoError(t, err)
 
 	assert.Len(t, year, 12)

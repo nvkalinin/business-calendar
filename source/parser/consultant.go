@@ -17,7 +17,7 @@ type Consultant struct {
 	baseURL   string // Только для тестирования.
 }
 
-func (c *Consultant) ParseYear(y int) (store.Months, error) {
+func (c *Consultant) GetYear(y int) (store.Months, error) {
 	dom, err := c.getCalendarPage(y)
 	if err != nil {
 		return nil, err

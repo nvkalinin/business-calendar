@@ -17,7 +17,7 @@ func NewGeneric() *Generic {
 	}
 }
 
-func (g *Generic) GetYear(targetYear int) store.Months {
+func (g *Generic) GetYear(targetYear int) (store.Months, error) {
 	cal := makeEmptyYear()
 
 	date := time.Date(targetYear, time.January, 1, 0, 0, 0, 0, time.UTC)
@@ -42,7 +42,7 @@ func (g *Generic) GetYear(targetYear int) store.Months {
 		date = date.AddDate(0, 0, 1)
 	}
 
-	return cal
+	return cal, nil
 }
 
 func makeEmptyYear() store.Months {

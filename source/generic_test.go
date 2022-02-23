@@ -9,7 +9,7 @@ import (
 
 func TestGeneric_GetYear(t *testing.T) {
 	generic := NewGeneric()
-	year := generic.GetYear(2022)
+	year, _ := generic.GetYear(2022)
 
 	expJanuary := store.Days{
 		1: store.Day{WeekDay: "sat", Working: false, Type: store.Weekend},
