@@ -65,6 +65,7 @@ func (s *Server) routes() *chi.Mux {
 	}
 	r.Use(middleware.Recoverer)
 
+	r.Get("/ping", pingCtrl)
 	r.Route("/api", func(r chi.Router) {
 		if s.Opts.RateLimiter {
 			r.Use(httprate.LimitByIP(s.Opts.ReqLimit, s.Opts.LimitWindow))
@@ -129,6 +130,10 @@ func (s *Server) dayCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendJsonResponse(w, day)
+}
+
+func pingCtrl(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
 }
 
 func intParam(r *http.Request, param string) (int, error) {
