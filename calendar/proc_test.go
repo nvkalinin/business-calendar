@@ -3,10 +3,11 @@ package calendar
 import (
 	"context"
 	"fmt"
-	"github.com/nvkalinin/business-calendar/store"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/nvkalinin/business-calendar/store"
+	"github.com/stretchr/testify/assert"
 )
 
 type SrcMock map[int]store.Months
@@ -44,10 +45,10 @@ func TestProcessor_MakeCalendar(t *testing.T) {
 
 	tmpStore := StoreMock{}
 
-	p := &Processor{
+	p, _ := makeProcessor(ProcOpts{
 		Src:   []Source{src1, src2},
 		Store: tmpStore,
-	}
+	})
 	err := p.UpdateCalendar(2022)
 	assert.NoError(t, err)
 
@@ -77,18 +78,24 @@ func TestProcessor_DoUpdates(t *testing.T) {
 	}
 	tmpStore := StoreMock{}
 
-	p := &Processor{
+	p, stop := makeProcessor(ProcOpts{
 		Src:      []Source{src},
 		Store:    tmpStore,
 		UpdateAt: time.Now().Add(500 * time.Millisecond),
-	}
+	})
+	defer stop()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	go p.DoUpdates(ctx)
+	go p.RunUpdates()
 	assert.Len(t, tmpStore, 0)
 
 	time.Sleep(1000 * time.Millisecond)
 	assert.Len(t, tmpStore, 2)
+}
+
+func makeProcessor(opts ProcOpts) (p *Processor, stop func()) {
+	p = NewProcessor(opts)
+	return p, func() {
+		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		p.Shutdown(ctx)
+	}
 }

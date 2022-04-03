@@ -3,9 +3,10 @@ package calendar
 import (
 	"context"
 	"fmt"
-	"github.com/nvkalinin/business-calendar/store"
 	"log"
 	"time"
+
+	"github.com/nvkalinin/business-calendar/store"
 )
 
 type Source interface {
@@ -17,14 +18,27 @@ type Store interface {
 	PutYear(y int, data store.Months) error
 }
 
-type Processor struct {
+type ProcOpts struct {
 	Src      []Source  // Упорядоченный список источников календарей.
 	Store    Store     // Куда сохранять итоговый календарь (необязательно, если нужен только метод MakeCalendar).
 	UpdateAt time.Time // Используется только время, остальное игнорируется.
 }
 
+type Processor struct {
+	ProcOpts
+	stopCh  chan struct{}
+	stopped bool
+}
+
+func NewProcessor(opts ProcOpts) *Processor {
+	return &Processor{
+		ProcOpts: opts,
+		stopCh:   make(chan struct{}),
+	}
+}
+
 // DoUpdates раз в сутки (UpdateAt) обновляет календари за текущий и следующий год.
-func (p *Processor) DoUpdates(ctx context.Context) {
+func (p *Processor) RunUpdates() {
 	t := time.NewTimer(p.untilNextRun())
 	for {
 		select {
@@ -32,9 +46,25 @@ func (p *Processor) DoUpdates(ctx context.Context) {
 			p.UpdateCurrentYears()
 			t.Reset(p.untilNextRun())
 
-		case <-ctx.Done():
-			t.Stop()
+		case <-p.stopCh:
+			p.stopped = true
 			return
+		}
+	}
+}
+
+func (p *Processor) Shutdown(ctx context.Context) error {
+	close(p.stopCh)
+
+	for {
+		select {
+		case <-time.After(10 * time.Millisecond):
+			if p.stopped {
+				return nil
+			}
+		case <-ctx.Done():
+			log.Printf("[WARN] calendar.Proc shutdown timeout")
+			return ctx.Err()
 		}
 	}
 }
