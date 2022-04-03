@@ -4,15 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
 	"github.com/nvkalinin/business-calendar/store"
-	"log"
-	"net"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type Store interface {
@@ -24,6 +24,7 @@ type Store interface {
 type Server struct {
 	Store Store
 	Opts  Opts
+	srv   *http.Server
 }
 
 type Opts struct {
@@ -40,26 +41,34 @@ type Opts struct {
 	LimitWindow time.Duration
 }
 
-func (s *Server) Run(ctx context.Context) error {
+func (s *Server) Run() error {
 	r := s.routes()
 
-	srv := &http.Server{
+	s.srv = &http.Server{
 		Addr:              s.Opts.Listen,
 		Handler:           r,
 		ReadTimeout:       s.Opts.ReadTimeout,
 		ReadHeaderTimeout: s.Opts.ReadHeaderTimeout,
 		WriteTimeout:      s.Opts.WriteTimeout,
 		IdleTimeout:       s.Opts.IdleTimeout,
-		BaseContext: func(net.Listener) context.Context {
-			return ctx
-		},
 	}
-	return srv.ListenAndServe()
+
+	if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
+		return fmt.Errorf("cannot run rest server: %w", err)
+	}
+	return nil
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	if err := s.srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("cannot shutdown rest server: %w", err)
+	}
+	return nil
 }
 
 func (s *Server) routes() *chi.Mux {
 	r := chi.NewRouter()
-	
+
 	if s.Opts.LogRequests {
 		r.Use(middleware.Logger)
 	}
@@ -184,7 +193,7 @@ func combineErrors(err ...error) error {
 			nonNil = append(nonNil, e)
 		}
 	}
-	
+
 	if len(nonNil) == 0 {
 		return nil
 	}
