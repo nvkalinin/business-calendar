@@ -39,8 +39,9 @@ type ServerCmd struct {
 	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следущий год."`
 
 	Web struct {
-		Listen    string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0" description:"Сетевой адрес для веб-сервера."`
-		AccessLog bool   `long:"access-log" env:"ACCESS_LOG" description:"Логировать все HTTP-запросы."`
+		Listen      string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0" description:"Сетевой адрес для веб-сервера."`
+		AccessLog   bool   `long:"access-log" env:"ACCESS_LOG" description:"Логировать все HTTP-запросы."`
+		AdminPasswd string `long:"admin-passwd" env:"ADMIN_PASSWD" description:"Пароль пользователя admin для вызова /api/admin/*."`
 
 		ReadTimeout       time.Duration `long:"read-timeout" env:"READ_TIMEOUT" value-name:"duration" default:"5s"`
 		ReadHeaderTimeout time.Duration `long:"read-header-timeout" env:"READ_HEADER_TIMEOUT" value-name:"duration" default:"5s"`
@@ -137,6 +138,7 @@ func (s *ServerCmd) makeApp() (*app, error) {
 		Opts: rest.Opts{
 			Listen:      s.Web.Listen,
 			LogRequests: s.Web.AccessLog,
+			AdminPasswd: s.Web.AdminPasswd,
 
 			ReadTimeout:       s.Web.ReadTimeout,
 			ReadHeaderTimeout: s.Web.ReadHeaderTimeout,
