@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
 	"github.com/nvkalinin/business-calendar/store"
+	"github.com/nvkalinin/business-calendar/store/engine"
 )
 
 type Store interface {
@@ -30,6 +32,7 @@ type Server struct {
 type Opts struct {
 	Listen      string
 	LogRequests bool
+	AdminPasswd string
 
 	ReadTimeout       time.Duration
 	ReadHeaderTimeout time.Duration
@@ -83,6 +86,13 @@ func (s *Server) routes() *chi.Mux {
 		r.Get("/cal/{y}", s.yearCtrl)
 		r.Get("/cal/{y}/{m}", s.monthCtrl)
 		r.Get("/cal/{y}/{m}/{d}", s.dayCtrl)
+
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(middleware.BasicAuth("business-calendar", map[string]string{"admin": s.Opts.AdminPasswd}))
+			r.Use(middleware.NoCache)
+
+			r.Get("/backup", s.backupCtrl)
+		})
 	})
 
 	return r
@@ -184,6 +194,35 @@ func dayParam(r *http.Request) (int, error) {
 		return 0, fmt.Errorf("invalid day number")
 	}
 	return d, nil
+}
+
+func (s *Server) backupCtrl(w http.ResponseWriter, r *http.Request) {
+	// Подедрживается только резервное копирование bolt.
+	// Для поддержки бекапа произвольных хранилищ нужно сделать экспорт/импорт через отдельный формат.
+	// Практической необходимости в этом нет.
+
+	boltStore, isBolt := s.Store.(*engine.Bolt)
+	if !isBolt {
+		sendErrorJson(w, 500, "opnly bolt supports backup")
+		return
+	}
+
+	fileName := fmt.Sprintf("cal_%s.bolt.gz", time.Now().Format("2006-01-02"))
+
+	w.Header().Set("Content-Type", "application/gzip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+	w.WriteHeader(200)
+
+	gzw := gzip.NewWriter(w)
+	defer func() {
+		if err := gzw.Close(); err != nil {
+			log.Printf("[WARN] cannot close gzip writer: %v", err)
+		}
+	}()
+
+	if err := boltStore.Backup(gzw); err != nil {
+		log.Printf("[WARN] cannot make backup: %v", err)
+	}
 }
 
 func combineErrors(err ...error) error {
