@@ -17,6 +17,10 @@ func NewMemory() *Memory {
 	}
 }
 
+func (m *Memory) Close() error {
+	return nil
+}
+
 func (m *Memory) FindDay(y int, mon time.Month, d int) (*store.Day, bool) {
 	month, ok := m.FindMonth(y, mon)
 	if !ok {
