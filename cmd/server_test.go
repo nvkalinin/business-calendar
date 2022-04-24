@@ -29,6 +29,7 @@ func TestServerCmd(t *testing.T) {
 func TestServerCmd_syncOnStart(t *testing.T) {
 	_, a, port := newApp(t, func(cmd *ServerCmd) {
 		cmd.SyncOnStart = []string{"2021", "current", "next"}
+		cmd.Store.Override = "testdata/override.yml"
 	})
 	defer a.shutdown()
 
@@ -36,11 +37,23 @@ func TestServerCmd_syncOnStart(t *testing.T) {
 	waitForHTTP(port)
 	time.Sleep(200 * time.Millisecond) // должно быть достаточно для generic календаря
 
+	// Из generic-календаря.
 	status, json := getBody(t, fmt.Sprintf("http://localhost:%d/api/cal/2021/01/01", port))
 	expJson := `{
 		"weekDay": "fri",
 		"working": true,
 		"type": "normal"
+	}`
+	assert.Equal(t, 200, status)
+	assert.JSONEq(t, expJson, json)
+
+	// Из override.yml.
+	status, json = getBody(t, fmt.Sprintf("http://localhost:%d/api/cal/2021/01/02", port))
+	expJson = `{
+		"weekDay": "sat",
+		"working": true,
+		"type": "normal",
+		"desc": "работаем"
 	}`
 	assert.Equal(t, 200, status)
 	assert.JSONEq(t, expJson, json)

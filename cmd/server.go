@@ -61,6 +61,8 @@ type ServerCmd struct {
 		Bolt struct {
 			File string `long:"file" env:"FILE" value-name:"path" default:"cal.bolt" description:"Путь к файлу БД."`
 		} `group:"Настройки хранилища bolt" namespace:"bolt" env-namespace:"BOLT"`
+
+		Override string `long:"override" env:"OVERRIDE" value-name:"path" description:"Путь к YAML файлу с локальными переопределениями календаря."`
 	} `group:"Хранилище" namespace:"store" env-namespace:"STORE"`
 
 	Source struct {
@@ -202,7 +204,11 @@ func (s *ServerCmd) makeSources() ([]calendar.Source, error) {
 		return nil, fmt.Errorf("unknown parser %s", s.Source.Parser)
 	}
 
-	// TODO override
+	if s.Store.Override != "" {
+		src = append(src, &source.Override{
+			Path: s.Store.Override,
+		})
+	}
 
 	return src, nil
 }
