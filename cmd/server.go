@@ -24,6 +24,7 @@ type EngineType string
 
 var (
 	EngineMemory EngineType = "memory"
+	EngineBolt   EngineType = "bolt"
 )
 
 type ParserType string
@@ -55,8 +56,11 @@ type ServerCmd struct {
 	} `group:"Web" namespace:"web" env-namespace:"WEB"`
 
 	Store struct {
-		// TODO: поменять потом default на bolt.
-		Engine EngineType `long:"engine" env:"ENGINE" value-name:"type" choice:"memory" default:"memory" description:"Тип хранилища для данных, собранных пармерами."`
+		Engine EngineType `long:"engine" env:"ENGINE" value-name:"type" choice:"memory" choice:"bolt" default:"bolt" description:"Тип хранилища для данных, собранных пармерами."`
+
+		Bolt struct {
+			File string `long:"file" env:"FILE" value-name:"path" default:"cal.bolt" description:"Путь к файлу БД."`
+		} `group:"Настройки хранилища bolt" namespace:"bolt" env-namespace:"BOLT"`
 	} `group:"Хранилище" namespace:"store" env-namespace:"STORE"`
 
 	Source struct {
@@ -166,6 +170,8 @@ func (s *ServerCmd) makeStore() (Store, error) {
 	switch s.Store.Engine {
 	case EngineMemory:
 		return engine.NewMemory(), nil
+	case EngineBolt:
+		return engine.NewBolt(s.Store.Bolt.File)
 	default:
 		return nil, fmt.Errorf("unknown store engine %s", s.Store.Engine)
 	}
