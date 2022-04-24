@@ -23,10 +23,15 @@ type Store interface {
 	FindYear(y int) (store.Months, bool)
 }
 
+type Updater interface {
+	UpdateCalendar(y int) error
+}
+
 type Server struct {
-	Store Store
-	Opts  Opts
-	srv   *http.Server
+	Store   Store
+	Updater Updater
+	Opts    Opts
+	srv     *http.Server
 }
 
 type Opts struct {
@@ -92,6 +97,7 @@ func (s *Server) routes() *chi.Mux {
 			r.Use(middleware.NoCache)
 
 			r.Get("/backup", s.backupCtrl)
+			r.Post("/sync", s.syncCtrl)
 		})
 	})
 
@@ -223,6 +229,41 @@ func (s *Server) backupCtrl(w http.ResponseWriter, r *http.Request) {
 	if err := boltStore.Backup(gzw); err != nil {
 		log.Printf("[WARN] cannot make backup: %v", err)
 	}
+}
+
+func (s *Server) syncCtrl(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		sendErrorJson(w, 400, "cannot parse request")
+		return
+	}
+
+	yStr, ok := r.Form["y"]
+	if !ok {
+		sendErrorJson(w, 400, "'y' param is required")
+		return
+	}
+
+	years := make([]int, len(yStr))
+	for i, v := range yStr {
+		y, err := strconv.Atoi(v)
+		if err != nil {
+			sendErrorJson(w, 400, fmt.Sprintf("invalid year '%s': %v", v, err))
+			return
+		}
+		years[i] = y
+	}
+
+	res := make(map[int]string)
+	for _, y := range years {
+		err := s.Updater.UpdateCalendar(y)
+		if err != nil {
+			res[y] = fmt.Sprintf("error: %v", err)
+		} else {
+			res[y] = "ok"
+		}
+	}
+
+	sendJsonResponse(w, res)
 }
 
 func combineErrors(err ...error) error {

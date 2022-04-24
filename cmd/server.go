@@ -140,6 +140,7 @@ func (s *ServerCmd) makeApp() (*app, error) {
 
 	a.srv = &rest.Server{
 		Store: store,
+		Updater: a.proc,
 		Opts: rest.Opts{
 			Listen:      s.Web.Listen,
 			LogRequests: s.Web.AccessLog,
