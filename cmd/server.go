@@ -43,10 +43,10 @@ type ServerCmd struct {
 		AccessLog   bool   `long:"access-log" env:"ACCESS_LOG" description:"Логировать все HTTP-запросы."`
 		AdminPasswd string `long:"admin-passwd" env:"ADMIN_PASSWD" description:"Пароль пользователя admin для вызова /api/admin/*."`
 
-		ReadTimeout       time.Duration `long:"read-timeout" env:"READ_TIMEOUT" value-name:"duration" default:"5s"`
-		ReadHeaderTimeout time.Duration `long:"read-header-timeout" env:"READ_HEADER_TIMEOUT" value-name:"duration" default:"5s"`
-		WriteTimeout      time.Duration `long:"write-timeout" env:"WRITE_TIMEOUT" value-name:"duration" default:"5s"`
-		IdleTimeout       time.Duration `long:"idle-timeout" env:"IDLE_TIMEOUT" value-name:"duration" default:"30s"`
+		ReadTimeout       time.Duration `long:"read-timeout" env:"READ_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server ReadTimeout"`
+		ReadHeaderTimeout time.Duration `long:"read-header-timeout" env:"READ_HEADER_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server ReadHeaderTimeout"`
+		WriteTimeout      time.Duration `long:"write-timeout" env:"WRITE_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server WriteTimeout"`
+		IdleTimeout       time.Duration `long:"idle-timeout" env:"IDLE_TIMEOUT" value-name:"duration" default:"30s" description:"http.Server IdleTimeout"`
 
 		RateLimiter struct {
 			ReqLimit    int           `long:"reqs" env:"REQS" value-name:"num" default:"100" description:"Количество запросов с одного IP."`
