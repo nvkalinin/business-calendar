@@ -38,7 +38,7 @@ func TestProcessor_MakeCalendar(t *testing.T) {
 	src2 := SrcMock{2022: {
 		time.February: {
 			22: {WeekDay: store.Tuesday, Working: true, Type: store.PreHoliday},
-			23: {WeekDay: store.Wednesday, Working: false, Type: store.Holiday},
+			23: {Working: false, Type: store.Holiday}, // День недели должен остаться из src1.
 			24: {WeekDay: store.Thursday, Working: true, Type: store.Normal},
 		},
 	}}

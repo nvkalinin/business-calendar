@@ -136,7 +136,20 @@ func merge(m1 store.Months, m2 store.Months) store.Months {
 		}
 
 		for dayNum, day := range days {
-			res[mon][dayNum] = day
+			merged := res[mon][dayNum]
+			merged.Working = day.Working
+
+			if day.WeekDay != "" {
+				merged.WeekDay = day.WeekDay
+			}
+			if day.Type != "" {
+				merged.Type = day.Type
+			}
+			if day.Desc != "" {
+				merged.Desc = day.Desc
+			}
+
+			res[mon][dayNum] = merged
 		}
 	}
 	return res
