@@ -40,10 +40,10 @@ func NewWeekDay(wd time.Weekday) (WeekDay, bool) {
 }
 
 type Day struct {
-	WeekDay WeekDay `json:"weekDay,omitempty"`
-	Working bool    `json:"working"`
-	Type    DayType `json:"type,omitempty"`
-	Desc    string  `json:"desc,omitempty"`
+	WeekDay WeekDay `json:"weekDay,omitempty" yaml:"weekDay"`
+	Working bool    `json:"working" yaml:"working"`
+	Type    DayType `json:"type,omitempty" yaml:"type"`
+	Desc    string  `json:"desc,omitempty" yaml:"desc"`
 }
 
 type Days map[int]Day
