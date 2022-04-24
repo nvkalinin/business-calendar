@@ -95,6 +95,7 @@ type app struct {
 	autoSync        bool
 	syncYears       []int
 	syncYearsFinish chan struct{}
+	stopped         bool
 }
 
 func (s *ServerCmd) makeApp() (*app, error) {
@@ -266,6 +267,10 @@ func (a *app) run() {
 }
 
 func (a *app) shutdown() {
+	if a.stopped {
+		return
+	}
+
 	log.Printf("[INFO] shutting down...")
 
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
@@ -291,6 +296,7 @@ func (a *app) shutdown() {
 	if err := g.Wait(); err != nil {
 		log.Printf("[ERROR] app shutdown: %v", err)
 	}
+	a.stopped = true
 }
 
 func syncOnRun(proc *calendar.Processor, years []int, finished chan<- struct{}) {
