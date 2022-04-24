@@ -10,10 +10,10 @@ import (
 	"time"
 )
 
-func newApp(t *testing.T, cmdMod func(*ServerCmd)) (cmd *ServerCmd, app *app, port int) {
+func newApp(t *testing.T, cmdMod func(*Server)) (cmd *Server, app *app, port int) {
 	port = unusedPort()
 
-	cmd = &ServerCmd{}
+	cmd = &Server{}
 	cmd.SyncOnStart = []string{}
 	cmd.Web.Listen = fmt.Sprintf("127.0.0.1:%d", port)
 	cmd.Web.AdminPasswd = "pass"

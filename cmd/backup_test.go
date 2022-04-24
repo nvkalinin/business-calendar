@@ -17,7 +17,7 @@ func TestBackupCmd(t *testing.T) {
 	// 1. Запустить app, подождать SyncOnStart, сделать бекап.
 
 	dir := t.TempDir()
-	_, a, port := newApp(t, func(cmd *ServerCmd) {
+	_, a, port := newApp(t, func(cmd *Server) {
 		cmd.SyncOnStart = []string{"2021"}
 		cmd.Store.Engine = "bolt"
 		cmd.Store.Bolt.File = dir + "/cal.bolt"
@@ -47,7 +47,7 @@ func TestBackupCmd(t *testing.T) {
 	// 2. Запустить новый app из бекапа и проверить наличие календаря.
 
 	dbFile := gzipDecompress(t, files[0])
-	_, a, port = newApp(t, func(cmd *ServerCmd) {
+	_, a, port = newApp(t, func(cmd *Server) {
 		cmd.Store.Engine = "bolt"
 		cmd.Store.Bolt.File = dbFile
 	})
@@ -66,8 +66,8 @@ func TestBackupCmd(t *testing.T) {
 	assert.JSONEq(t, expJson, json)
 }
 
-func newBackupCmd(port int) (cmd *BackupCmd) {
-	return &BackupCmd{
+func newBackupCmd(port int) (cmd *Backup) {
+	return &Backup{
 		ServerUrl:   fmt.Sprintf("http://127.0.0.1:%d", port),
 		AdminPasswd: "pass",
 		Timeout:     10 * time.Minute,

@@ -11,14 +11,14 @@ import (
 	"time"
 )
 
-type SyncCmd struct {
+type Sync struct {
 	ServerUrl   string        `long:"server-url" short:"s" env:"SERVER_URL" value-name:"str" default:"http://localhost" description:"URL сервера с REST API календаря."`
 	AdminPasswd string        `long:"passwd" short:"p" env:"WEB_ADMIN_PASSWD" value-name:"str" description:"Пароль пользователя admin."`
 	Timeout     time.Duration `long:"timeout" short:"t" env:"TIMEOUT" value-name:"duration" default:"60s" description:"Макс. время выполнения запроса."`
 	Years       []int         `long:"year" short:"y" env:"YEAR" value-name:"int" required:"true" description:"Год, за который нужно синхронизировать календарь. Можно указывать несколько раз."`
 }
 
-func (s *SyncCmd) Execute(args []string) error {
+func (s *Sync) Execute(args []string) error {
 	ystr := make([]string, len(s.Years))
 	for i, y := range s.Years {
 		ystr[i] = strconv.Itoa(y)

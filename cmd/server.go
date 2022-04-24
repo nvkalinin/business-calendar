@@ -34,7 +34,7 @@ var (
 	ParserConsultant ParserType = "consultant"
 )
 
-type ServerCmd struct {
+type Server struct {
 	Debug       bool     `short:"d" long:"debug" env:"DEBUG" description:"Включить вывод отладочных сообщений в лог."`
 	SyncAt      string   `long:"sync-at" env:"SYNC_AT" value-name:"hh:mm[:ss]" description:"В какое время синхронизировать производственный календарь со всеми источниками. Обновление происходит один раз в сутки. Если не указано, то автоматическое обновление отключено."`
 	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следущий год."`
@@ -77,7 +77,7 @@ type ServerCmd struct {
 	} `group:"Источник данных" namespace:"source" env-namespace:"SOURCE"`
 }
 
-func (s *ServerCmd) Execute(args []string) error {
+func (s *Server) Execute(args []string) error {
 	// TODO s.Debug
 
 	a, err := s.makeApp()
@@ -104,7 +104,7 @@ type app struct {
 	stopped         bool
 }
 
-func (s *ServerCmd) makeApp() (*app, error) {
+func (s *Server) makeApp() (*app, error) {
 	a := &app{
 		syncYearsFinish: make(chan struct{}),
 	}
@@ -169,7 +169,7 @@ type Store interface {
 	PutYear(y int, data store.Months) error
 }
 
-func (s *ServerCmd) makeStore() (Store, error) {
+func (s *Server) makeStore() (Store, error) {
 	switch s.Store.Engine {
 	case EngineMemory:
 		return engine.NewMemory(), nil
@@ -180,7 +180,7 @@ func (s *ServerCmd) makeStore() (Store, error) {
 	}
 }
 
-func (s *ServerCmd) makeSources() ([]calendar.Source, error) {
+func (s *Server) makeSources() ([]calendar.Source, error) {
 	src := make([]calendar.Source, 0, 3)
 	src = append(src, source.NewGeneric())
 

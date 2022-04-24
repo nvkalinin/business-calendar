@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-type BackupCmd struct {
+type Backup struct {
 	ServerUrl   string        `long:"server-url" short:"s" env:"SERVER_URL" default:"http://localhost" description:"URL сервера с REST API календаря."`
 	AdminPasswd string        `long:"passwd" short:"p" env:"WEB_ADMIN_PASSWD" description:"Пароль пользователя admin."`
 	OutFile     string        `long:"out" short:"o" env:"OUT" description:"Путь к файлу, куда сохранить бекап. По умолчанию: cal_YYYY-MM-DD.bolt.gz"`
 	Timeout     time.Duration `long:"timeout" short:"t" env:"TIMEOUT" default:"600s" description:"Макс. время выполнения запроса."`
 }
 
-func (b *BackupCmd) Execute(args []string) error {
+func (b *Backup) Execute(args []string) error {
 	req, err := http.NewRequest(http.MethodGet, makeUrl(b.ServerUrl, "/api/admin/backup"), http.NoBody)
 	if err != nil {
 		log.Fatalf("[ERROR] cannot create request: %v", err)
@@ -62,7 +62,7 @@ func (b *BackupCmd) Execute(args []string) error {
 	return nil
 }
 
-func (b *BackupCmd) filename(resp *http.Response) string {
+func (b *Backup) filename(resp *http.Response) string {
 	if len(b.OutFile) > 0 {
 		return b.OutFile
 	}

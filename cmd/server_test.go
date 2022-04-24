@@ -27,7 +27,7 @@ func TestServerCmd(t *testing.T) {
 }
 
 func TestServerCmd_syncOnStart(t *testing.T) {
-	_, a, port := newApp(t, func(cmd *ServerCmd) {
+	_, a, port := newApp(t, func(cmd *Server) {
 		cmd.SyncOnStart = []string{"2021", "current", "next"}
 		cmd.Store.Override = "testdata/override.yml"
 	})
@@ -68,7 +68,7 @@ func TestServerCmd_syncOnStart(t *testing.T) {
 }
 
 func TestServerCmd_autoSync(t *testing.T) {
-	_, a, port := newApp(t, func(cmd *ServerCmd) {
+	_, a, port := newApp(t, func(cmd *Server) {
 		cmd.SyncAt = time.Now().Add(1 * time.Second).Format("15:04:05")
 	})
 	defer a.shutdown()
@@ -106,14 +106,14 @@ func TestServerCmd_signalsAndShutdown(t *testing.T) {
 }
 
 func TestServerCmd_fail(t *testing.T) {
-	cmd := &ServerCmd{}
+	cmd := &Server{}
 	flags.ParseArgs(cmd, []string{
 		"--store.engine=foo",
 	})
 	_, err := cmd.makeApp()
 	assert.ErrorContains(t, err, "unknown store engine")
 
-	cmd = &ServerCmd{}
+	cmd = &Server{}
 	flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=foo",
@@ -121,7 +121,7 @@ func TestServerCmd_fail(t *testing.T) {
 	_, err = cmd.makeApp()
 	assert.ErrorContains(t, err, "unknown parser")
 
-	cmd = &ServerCmd{}
+	cmd = &Server{}
 	flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",
@@ -130,7 +130,7 @@ func TestServerCmd_fail(t *testing.T) {
 	_, err = cmd.makeApp()
 	assert.ErrorContains(t, err, "sync at")
 
-	cmd = &ServerCmd{}
+	cmd = &Server{}
 	flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",
@@ -140,7 +140,7 @@ func TestServerCmd_fail(t *testing.T) {
 	_, err = cmd.makeApp()
 	assert.ErrorContains(t, err, "sync on start")
 
-	cmd = &ServerCmd{}
+	cmd = &Server{}
 	flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",

@@ -39,8 +39,8 @@ func TestSyncCmd(t *testing.T) {
 	assert.JSONEq(t, expJson, json)
 }
 
-func newSyncCmd(port int, y []int) *SyncCmd {
-	return &SyncCmd{
+func newSyncCmd(port int, y []int) *Sync {
+	return &Sync{
 		ServerUrl:   fmt.Sprintf("http://localhost:%d", port),
 		AdminPasswd: "pass",
 		Timeout:     60 * time.Second,
