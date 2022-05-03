@@ -99,6 +99,7 @@ func (s *Server) Execute(args []string) error {
 	}()
 
 	a.run()
+	a.wait()
 	return nil
 }
 
@@ -281,7 +282,7 @@ func parseYears(vals []string) ([]int, error) {
 }
 
 func (a *app) run() {
-	g, ctx := errgroup.WithContext(context.Background())
+	g, _ := errgroup.WithContext(context.Background())
 
 	if a.autoSync {
 		g.Go(func() error {
@@ -303,8 +304,7 @@ func (a *app) run() {
 		return nil
 	})
 
-	<-ctx.Done()
-	if ctx.Err() != nil {
+	if g.Wait() != nil {
 		a.shutdown()
 	}
 }
@@ -340,6 +340,12 @@ func (a *app) shutdown() {
 		log.Printf("[ERROR] app shutdown: %v", err)
 	}
 	a.stopped = true
+}
+
+func (a *app) wait() {
+	for !a.stopped {
+		time.Sleep(10 * time.Millisecond)
+	}
 }
 
 func syncOnRun(proc *calendar.Processor, years []int, finished chan<- struct{}) {
