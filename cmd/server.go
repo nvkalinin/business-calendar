@@ -51,7 +51,7 @@ type Server struct {
 		IdleTimeout       time.Duration `long:"idle-timeout" env:"IDLE_TIMEOUT" value-name:"duration" default:"30s" description:"http.Server IdleTimeout"`
 
 		RateLimiter struct {
-			ReqLimit    int           `long:"reqs" env:"REQS" value-name:"num" default:"100" description:"Количество запросов с одного IP."`
+			ReqLimit    int           `long:"reqs" env:"REQS" value-name:"num" default:"100" description:"Количество запросов с одного IP. Если 0 — rate limiter отключен."`
 			LimitWindow time.Duration `long:"window" env:"WINDOW" value-name:"duration" default:"1s" description:"Интервал времени, за который разврешено указанное кол-во запросов."`
 		} `group:"Rate Limiter" namespace:"ratelim" env-namespace:"RATE_LIM"`
 	} `group:"Web" namespace:"web" env-namespace:"WEB"`
