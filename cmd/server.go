@@ -91,13 +91,14 @@ func (s *Server) Execute(args []string) error {
 		return err
 	}
 
-	go a.run()
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigChan
+		a.shutdown()
+	}()
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
-	a.shutdown()
-
+	a.run()
 	return nil
 }
 
@@ -294,11 +295,16 @@ func (a *app) run() {
 		return nil
 	})
 
-	g.Go(a.srv.Run)
+	g.Go(func() error {
+		if err := a.srv.Run(); err != nil && err != http.ErrServerClosed {
+			log.Printf("[ERROR] startup: %v", err)
+			return err
+		}
+		return nil
+	})
 
 	<-ctx.Done()
-	err := ctx.Err()
-	if err != nil && err != http.ErrServerClosed {
+	if ctx.Err() != nil {
 		a.shutdown()
 	}
 }
