@@ -38,7 +38,7 @@ var (
 type Server struct {
 	Debug       bool     `short:"d" long:"debug" env:"DEBUG" description:"Включить вывод отладочных сообщений в лог."`
 	SyncAt      string   `long:"sync-at" env:"SYNC_AT" value-name:"hh:mm[:ss]" description:"В какое время синхронизировать производственный календарь со всеми источниками. Обновление происходит один раз в сутки. Если не указано, то автоматическое обновление отключено."`
-	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следущий год."`
+	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следующий год. 'none' — отключить синхронизацию при запуске."`
 
 	Web struct {
 		Listen      string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0" description:"Сетевой адрес для веб-сервера."`
@@ -246,6 +246,10 @@ func parseSyncAt(val string) (time.Time, error) {
 }
 
 func parseYears(vals []string) ([]int, error) {
+	if len(vals) == 1 && vals[0] == "none" {
+		return nil, nil
+	}
+
 	years := make(map[int]bool, len(vals))
 	for _, val := range vals {
 		switch val {
