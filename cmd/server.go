@@ -32,6 +32,7 @@ type ParserType string
 var (
 	ParserNone       ParserType = "none"
 	ParserConsultant ParserType = "consultant"
+	ParserSuperJob   ParserType = "superjob"
 )
 
 type Server struct {
@@ -66,12 +67,17 @@ type Server struct {
 	} `group:"Хранилище" namespace:"store" env-namespace:"STORE"`
 
 	Source struct {
-		Parser ParserType `long:"parser" env:"PARSER" value-name:"type" choice:"consultant" choice:"none" default:"consultant" description:"Внешний источник производственного календаря, который нужно парсить."`
+		Parser ParserType `long:"parser" env:"PARSER" value-name:"type" choice:"consultant" choice:"superjob" choice:"none" default:"consultant" description:"Внешний источник производственного календаря, который нужно парсить."`
 
 		Consultant struct {
 			Timeout   time.Duration `long:"timeout" env:"TIMEOUT" value-name:"duration" default:"30s" description:"Максимальное время выполнения запроса к сайту."`
 			UserAgent string        `long:"user-agent" env:"USER_AGENT" description:"Значение заголовка User-Agent во всех запросах к сайту."`
 		} `group:"Парсер consultant.ru" namespace:"consultant" env-namespace:"CONSULTANT"`
+
+		SuperJob struct {
+			Timeout   time.Duration `long:"timeout" env:"TIMEOUT" value-name:"duration" default:"30s" description:"Максимальное время выполнения запроса к сайту."`
+			UserAgent string        `long:"user-agent" env:"USER_AGENT" description:"Значение заголовка User-Agent во всех запросах к сайту."`
+		} `group:"Парсер superjob.ru" namespace:"superjob" env-namespace:"SUPERJOB"`
 
 		Override string `long:"override" env:"OVERRIDE" value-name:"file.yml" description:"Путь к файлу с локальными изменениями производственного календаря. Если задан, используется всегда, вне зависимости от выбранного парсера."`
 	} `group:"Источник данных" namespace:"source" env-namespace:"SOURCE"`
@@ -141,7 +147,7 @@ func (s *Server) makeApp() (*app, error) {
 	})
 
 	a.srv = &rest.Server{
-		Store: store,
+		Store:   store,
 		Updater: a.proc,
 		Opts: rest.Opts{
 			Listen:      s.Web.Listen,
@@ -195,6 +201,20 @@ func (s *Server) makeSources() ([]calendar.Source, error) {
 		p := &parser.Consultant{
 			Client: &http.Client{
 				Timeout: s.Source.Consultant.Timeout,
+			},
+			UserAgent: ua,
+		}
+
+		src = append(src, p)
+	case ParserSuperJob:
+		ua := s.Source.SuperJob.UserAgent
+		if ua == "" {
+			ua = "Go-http-client"
+		}
+
+		p := &parser.SuperJob{
+			Client: &http.Client{
+				Timeout: s.Source.SuperJob.Timeout,
 			},
 			UserAgent: ua,
 		}
