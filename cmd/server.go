@@ -41,7 +41,7 @@ type Server struct {
 	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следующий год. 'none' — отключить синхронизацию при запуске."`
 
 	Web struct {
-		Listen      string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0" description:"Сетевой адрес для веб-сервера."`
+		Listen      string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0:80" description:"Сетевой адрес для веб-сервера."`
 		AccessLog   bool   `long:"access-log" env:"ACCESS_LOG" description:"Логировать все HTTP-запросы."`
 		AdminPasswd string `long:"admin-passwd" env:"ADMIN_PASSWD" description:"Пароль пользователя admin для вызова /api/admin/*."`
 
