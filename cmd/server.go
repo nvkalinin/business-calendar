@@ -47,8 +47,10 @@ type Server struct {
 
 		ReadTimeout       time.Duration `long:"read-timeout" env:"READ_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server ReadTimeout"`
 		ReadHeaderTimeout time.Duration `long:"read-header-timeout" env:"READ_HEADER_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server ReadHeaderTimeout"`
-		WriteTimeout      time.Duration `long:"write-timeout" env:"WRITE_TIMEOUT" value-name:"duration" default:"5s" description:"http.Server WriteTimeout"`
 		IdleTimeout       time.Duration `long:"idle-timeout" env:"IDLE_TIMEOUT" value-name:"duration" default:"30s" description:"http.Server IdleTimeout"`
+
+		// Запросы к /admin могут выполняться долго, поэтому WriteTimout должен быть достаточно большим.
+		WriteTimeout time.Duration `long:"write-timeout" env:"WRITE_TIMEOUT" value-name:"duration" default:"60s" description:"http.Server WriteTimeout"`
 
 		RateLimiter struct {
 			ReqLimit    int           `long:"reqs" env:"REQS" value-name:"num" default:"100" description:"Количество запросов с одного IP. Если 0 — rate limiter отключен."`
