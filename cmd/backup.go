@@ -13,7 +13,7 @@ import (
 type Backup struct {
 	ServerUrl   string        `long:"server-url" short:"s" env:"SERVER_URL" default:"http://localhost" description:"URL сервера с REST API календаря."`
 	AdminPasswd string        `long:"passwd" short:"p" env:"WEB_ADMIN_PASSWD" description:"Пароль пользователя admin."`
-	OutFile     string        `long:"out" short:"o" env:"OUT" description:"Путь к файлу, куда сохранить бекап. По умолчанию: cal_YYYY-MM-DD.bolt.gz"`
+	OutFile     string        `long:"out" short:"o" env:"OUT" description:"Путь к файлу, куда сохранить бекап. По умолчанию: cal_YYYY-MM-DD.bolt.gz. Значение '-' выводит в стандартный поток вывода."`
 	Timeout     time.Duration `long:"timeout" short:"t" env:"TIMEOUT" default:"600s" description:"Макс. время выполнения запроса."`
 }
 
@@ -45,15 +45,20 @@ func (b *Backup) Execute(args []string) error {
 	}
 
 	fname := b.filename(resp)
-	f, err := os.Create(fname)
-	if err != nil {
-		log.Fatalf("[ERROR] cannot open %s: %v", fname, err)
-	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			log.Printf("[WARN] cannot close %s: %v", fname, err)
+	var f *os.File
+	if fname == "-" {
+		f = os.Stdout
+	} else {
+		f, err = os.Create(fname)
+		if err != nil {
+			log.Fatalf("[ERROR] cannot open %s: %v", fname, err)
 		}
-	}()
+		defer func() {
+			if err := f.Close(); err != nil {
+				log.Printf("[WARN] cannot close %s: %v", fname, err)
+			}
+		}()
+	}
 
 	if _, err := io.Copy(f, resp.Body); err != nil {
 		log.Fatalf("[ERROR] cannot save backup to %s: %v", fname, err)
