@@ -33,7 +33,7 @@ func TestBackupCmd(t *testing.T) {
 	// Тестируем также генерацию имени файла. Для этого переходим во временную директорию.
 	// После теста возвращаемся туда, где были.
 	if wd, err := os.Getwd(); err == nil {
-		defer os.Chdir(wd)
+		defer os.Chdir(wd) //nolint:errcheck // Ничего не поделать.
 	}
 	require.NoError(t, os.Chdir(dir))
 

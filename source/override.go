@@ -26,6 +26,5 @@ func (o *Override) GetYear(y int) (store.Months, error) {
 		return nil, fmt.Errorf("cannot parse overrides yaml: %w", err)
 	}
 
-	months, _ := ov[y]
-	return months, nil
+	return ov[y], nil
 }

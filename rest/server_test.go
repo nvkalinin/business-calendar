@@ -21,7 +21,7 @@ var testOpts = Opts{
 var testStore = engine.NewMemory()
 
 func init() {
-	testStore.PutYear(2022, store.Months{
+	_ = testStore.PutYear(2022, store.Months{
 		time.January: {
 			1:  store.Day{WeekDay: store.Saturday, Working: false, Type: store.Holiday},
 			2:  store.Day{WeekDay: store.Sunday, Working: false, Type: store.Holiday},

@@ -199,8 +199,7 @@ func (s *SuperJob) weekDays(n *goquery.Selection) <-chan time.Weekday {
 		wdName := n.Text()
 		wdName = strings.TrimSpace(wdName)
 		wdName = strings.ToLower(wdName)
-		wd, _ := nameToWeekDay[wdName]
-		wds[i] = wd
+		wds[i] = nameToWeekDay[wdName]
 	})
 
 	c := make(chan time.Weekday)

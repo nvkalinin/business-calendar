@@ -300,7 +300,9 @@ func sendErrorJson(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	restErr := &struct{ msg string }{msg}
+	restErr := &struct{
+		Msg string `json:"msg"`
+	}{msg}
 
 	errJson, err := json.Marshal(restErr)
 	if err != nil {

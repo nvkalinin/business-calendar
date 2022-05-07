@@ -328,7 +328,7 @@ func (a *app) shutdown() {
 
 	log.Printf("[INFO] shutting down...")
 
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second) //nolint:govet // Не нужен cancel, все равно завершение программы.
 	g, _ := errgroup.WithContext(ctx)
 
 	if a.autoSync {

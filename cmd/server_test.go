@@ -107,14 +107,14 @@ func TestServerCmd_signalsAndShutdown(t *testing.T) {
 
 func TestServerCmd_fail(t *testing.T) {
 	cmd := &Server{}
-	flags.ParseArgs(cmd, []string{
+	_, _ = flags.ParseArgs(cmd, []string{
 		"--store.engine=foo",
 	})
 	_, err := cmd.makeApp()
 	assert.ErrorContains(t, err, "unknown store engine")
 
 	cmd = &Server{}
-	flags.ParseArgs(cmd, []string{
+	_, _ = flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=foo",
 	})
@@ -122,7 +122,7 @@ func TestServerCmd_fail(t *testing.T) {
 	assert.ErrorContains(t, err, "unknown parser")
 
 	cmd = &Server{}
-	flags.ParseArgs(cmd, []string{
+	_, _ = flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",
 		"--sync-at=foo",
@@ -131,7 +131,7 @@ func TestServerCmd_fail(t *testing.T) {
 	assert.ErrorContains(t, err, "sync at")
 
 	cmd = &Server{}
-	flags.ParseArgs(cmd, []string{
+	_, _ = flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",
 		"--sync-at=05:00",
@@ -141,7 +141,7 @@ func TestServerCmd_fail(t *testing.T) {
 	assert.ErrorContains(t, err, "sync on start")
 
 	cmd = &Server{}
-	flags.ParseArgs(cmd, []string{
+	_, _ = flags.ParseArgs(cmd, []string{
 		"--store.engine=memory",
 		"--source.parser=consultant",
 		"--sync-at=05:00",

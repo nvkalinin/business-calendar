@@ -12,9 +12,11 @@ func makeUrl(serverUrl string, path string) string {
 }
 
 func readJsonError(body []byte) error {
-	restErr := &struct{ msg string }{}
+	restErr := &struct {
+		Msg string `json:"msg"`
+	}{}
 	if err := json.Unmarshal(body, restErr); err != nil {
 		return fmt.Errorf("cannot read error msg: %w", err)
 	}
-	return errors.New(restErr.msg)
+	return errors.New(restErr.Msg)
 }

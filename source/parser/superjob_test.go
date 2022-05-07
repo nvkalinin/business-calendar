@@ -17,7 +17,7 @@ func TestSuperJob_GetYear(t *testing.T) {
 		html, err := ioutil.ReadFile("testdata/superjob_2021.html")
 		require.NoError(t, err)
 
-		w.Write(html)
+		_, _ = w.Write(html)
 	})
 
 	s := httptest.NewServer(mux)

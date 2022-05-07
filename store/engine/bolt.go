@@ -54,7 +54,7 @@ func (b *Bolt) FindDay(y int, mon time.Month, d int) (*store.Day, bool) {
 }
 
 func (b *Bolt) FindMonth(y int, mon time.Month) (d store.Days, ok bool) {
-	b.db.View(func(tx *bbolt.Tx) error {
+	_ = b.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(calBucket))
 		if bucket == nil {
 			ok = false
@@ -77,7 +77,7 @@ func (b *Bolt) FindMonth(y int, mon time.Month) (d store.Days, ok bool) {
 }
 
 func (b *Bolt) FindYear(y int) (m store.Months, ok bool) {
-	b.db.View(func(tx *bbolt.Tx) error {
+	_ = b.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(calBucket))
 		if bucket == nil {
 			ok = false

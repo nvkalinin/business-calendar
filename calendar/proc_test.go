@@ -95,7 +95,7 @@ func TestProcessor_DoUpdates(t *testing.T) {
 func makeProcessor(opts ProcOpts) (p *Processor, stop func()) {
 	p = NewProcessor(opts)
 	return p, func() {
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-		p.Shutdown(ctx)
+		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second) //nolint:govet // В тестах можно без cancel.
+		_ = p.Shutdown(ctx)
 	}
 }
