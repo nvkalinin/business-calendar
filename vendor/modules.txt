@@ -34,6 +34,7 @@ go.etcd.io/bbolt
 ## explicit; go 1.17
 golang.org/x/net/html
 golang.org/x/net/html/atom
+golang.org/x/net/publicsuffix
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 ## explicit
 golang.org/x/sync/errgroup

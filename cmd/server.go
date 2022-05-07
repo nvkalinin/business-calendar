@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
 	"os/signal"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 	"github.com/nvkalinin/business-calendar/source/parser"
 	"github.com/nvkalinin/business-calendar/store"
 	"github.com/nvkalinin/business-calendar/store/engine"
+	"golang.org/x/net/publicsuffix"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -216,9 +218,17 @@ func (s *Server) makeSources() ([]calendar.Source, error) {
 			ua = "Go-http-client"
 		}
 
+		jar, err := cookiejar.New(&cookiejar.Options{
+			PublicSuffixList: publicsuffix.List,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("cannot create cookie jar: %w", err)
+		}
+
 		p := &parser.SuperJob{
 			Client: &http.Client{
 				Timeout: s.Source.SuperJob.Timeout,
+				Jar:     jar,
 			},
 			UserAgent: ua,
 		}
