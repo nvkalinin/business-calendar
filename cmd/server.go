@@ -38,7 +38,6 @@ var (
 )
 
 type Server struct {
-	Debug       bool     `short:"d" long:"debug" env:"DEBUG" description:"Включить вывод отладочных сообщений в лог."`
 	SyncAt      string   `long:"sync-at" env:"SYNC_AT" value-name:"hh:mm[:ss]" description:"В какое время синхронизировать производственный календарь со всеми источниками. Обновление происходит один раз в сутки. Если не указано, то автоматическое обновление отключено."`
 	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следующий год. 'none' — отключить синхронизацию при запуске."`
 
@@ -88,8 +87,6 @@ type Server struct {
 }
 
 func (s *Server) Execute(args []string) error {
-	// TODO s.Debug
-
 	a, err := s.makeApp()
 	if err != nil {
 		return err
