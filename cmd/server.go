@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/nvkalinin/business-calendar/calendar"
+	"github.com/nvkalinin/business-calendar/log"
 	"github.com/nvkalinin/business-calendar/rest"
 	"github.com/nvkalinin/business-calendar/source"
 	"github.com/nvkalinin/business-calendar/source/parser"
@@ -112,6 +112,8 @@ type app struct {
 }
 
 func (s *Server) makeApp() (*app, error) {
+	log.Printf("[DEBUG] server opts: %+v", s)
+
 	a := &app{
 		syncYearsFinish: make(chan struct{}),
 	}
@@ -357,6 +359,7 @@ func (a *app) wait() {
 
 func syncOnRun(proc *calendar.Processor, years []int, finished chan<- struct{}) {
 	for _, y := range years {
+		log.Printf("[INFO] sync on run: year %d...", y)
 		if err := proc.UpdateCalendar(y); err != nil {
 			log.Printf("[WARN] sync on run, year %d: %+v", y, err)
 		}

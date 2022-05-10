@@ -3,12 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/nvkalinin/business-calendar/log"
 )
 
 type Sync struct {
@@ -27,12 +28,14 @@ func (s *Sync) Execute(args []string) error {
 	params := url.Values{"y": ystr}
 	body := strings.NewReader(params.Encode())
 
-	req, err := http.NewRequest(http.MethodPost, makeUrl(s.ServerUrl, "/api/admin/sync"), body)
+	url := makeUrl(s.ServerUrl, "/api/admin/sync")
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		log.Fatalf("[ERROR] cannot make request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth("admin", s.AdminPasswd)
+	log.Printf("[DEBUG] sync request: URL=%s, %#v", url, req)
 
 	client := &http.Client{
 		Timeout: s.Timeout,
@@ -46,11 +49,13 @@ func (s *Sync) Execute(args []string) error {
 			log.Printf("[WARN] cannot close response: %v", err)
 		}
 	}()
+	log.Printf("[DEBUG] sync response: %#v", resp)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("[ERROR] cannot read response: %v", err)
 	}
+	log.Printf("[DEBUG] sync resp body: %v", respBody)
 
 	if resp.StatusCode != 200 {
 		err := readJsonError(respBody)

@@ -3,11 +3,12 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/nvkalinin/business-calendar/log"
 )
 
 type Backup struct {
@@ -18,11 +19,13 @@ type Backup struct {
 }
 
 func (b *Backup) Execute(args []string) error {
-	req, err := http.NewRequest(http.MethodGet, makeUrl(b.ServerUrl, "/api/admin/backup"), http.NoBody)
+	url := makeUrl(b.ServerUrl, "/api/admin/backup")
+	req, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if err != nil {
 		log.Fatalf("[ERROR] cannot create request: %v", err)
 	}
 	req.SetBasicAuth("admin", b.AdminPasswd)
+	log.Printf("[DEBUG] backup request: URL=%s, %#v", url, req)
 
 	client := &http.Client{Timeout: b.Timeout}
 	resp, err := client.Do(req)
@@ -34,6 +37,7 @@ func (b *Backup) Execute(args []string) error {
 			log.Printf("[WARN] cannot close resp body: %v", err)
 		}
 	}()
+	log.Printf("[DEBUG] backup response: %#v", resp)
 
 	if resp.StatusCode != 200 {
 		respBody, err := io.ReadAll(resp.Body)
@@ -45,6 +49,7 @@ func (b *Backup) Execute(args []string) error {
 	}
 
 	fname := b.filename(resp)
+	log.Printf("[DEBUG] saving backup to file '%s'", fname)
 	var f *os.File
 	if fname == "-" {
 		f = os.Stdout
@@ -60,9 +65,11 @@ func (b *Backup) Execute(args []string) error {
 		}()
 	}
 
-	if _, err := io.Copy(f, resp.Body); err != nil {
+	written, err := io.Copy(f, resp.Body)
+	if err != nil {
 		log.Fatalf("[ERROR] cannot save backup to %s: %v", fname, err)
 	}
+	log.Printf("[DEBUG] %d bytes written", written)
 
 	return nil
 }

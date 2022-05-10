@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/nvkalinin/business-calendar/log"
 	"github.com/nvkalinin/business-calendar/store"
 	"golang.org/x/text/unicode/norm"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,6 +27,9 @@ func (s *SuperJob) GetYear(y int) (store.Months, error) {
 	months := make(store.Months, 12)
 	for mon, monNode := range s.findMonths(dom) {
 		days := s.findDays(monNode, mon, y)
+
+		// На SuperJob в календарной сетке выходные дни отмечены как праздничные.
+		// Поэтому нужно дополнительно парсить список праздников, чтобы отделить настоящие праздники от обычных выходных.
 		months[mon] = s.parseRealHolidays(mon, dom, days)
 	}
 
@@ -40,6 +43,8 @@ func (s *SuperJob) getBaseURL() string {
 	return "https://www.superjob.ru"
 }
 
+// getCalendarPage делает запрос к странице календаря за год <y> и возвращает
+// DOM-дерево этой страницы.
 func (s *SuperJob) getCalendarPage(y int) (*goquery.Document, error) {
 	url := fmt.Sprintf("%s/proizvodstvennyj_kalendar/%d/", s.getBaseURL(), y)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -47,6 +52,7 @@ func (s *SuperJob) getCalendarPage(y int) (*goquery.Document, error) {
 	if s.UserAgent != "" {
 		req.Header.Set("User-Agent", s.UserAgent)
 	}
+	log.Printf("[DEBUG] parser/superjob year %d request: URL=%s %#v", y, url, req)
 
 	resp, err := s.Client.Do(req)
 	if err != nil {
@@ -57,6 +63,7 @@ func (s *SuperJob) getCalendarPage(y int) (*goquery.Document, error) {
 			log.Printf("[WARN] parser/superjob cannot close response: %+v", err)
 		}
 	}()
+	log.Printf("[DEBUG] parser/superjob year %d response: %#v", y, resp)
 
 	dom, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -65,11 +72,11 @@ func (s *SuperJob) getCalendarPage(y int) (*goquery.Document, error) {
 	return dom, nil
 }
 
+// findMonths находит в DOM страницы календари за все месяцы и возвращает их DOM-поддеревья
+// для дальнейшего парсинга. В этих поддеревьях не содержится информация о праздничных днях.
 func (*SuperJob) findMonths(doc *goquery.Document) map[time.Month]*goquery.Selection {
 	grids := doc.Find("div.MonthsList_grid")
-	if grids.Length() != 12 {
-		log.Printf("[WARN] parser/superjob expected 12 months, found %d", grids.Length())
-	}
+	log.Printf("[DEBUG] parser/superjob found %d month nodes", grids.Length())
 
 	byMonth := make(map[time.Month]*goquery.Selection, 12)
 	for i := range grids.Nodes {
@@ -228,10 +235,14 @@ func (s *SuperJob) parseDayNum(n *goquery.Selection) (int, error) {
 	return num, nil
 }
 
+// parseRealHolidays находит на странице описание праздников указанного месяца и дополняет days:
+// отмечает предпраздничные, праздничные дни, задает названия праздников, а все дни, что в календарной сетке
+// были отмечены праздничными, но отсутствуют в списке праздников, меняет на обычные выходные.
 func (s *SuperJob) parseRealHolidays(m time.Month, doc *goquery.Document, days store.Days) store.Days {
 	summaryByType := doc.Find(fmt.Sprintf(".MonthsList_summary.m_%d", m))
 
 	preHolidays := s.parseSummary(m, summaryByType.Find(".MonthsList_summary_preholiday"))
+	log.Printf("[DEBUG] parser/superjob %s: found pre-holidays: %#v", m, preHolidays)
 
 	holidays := make(map[int]string, 10)
 	summaryByType.Find(".MonthsList_summary_holiday").Each(func(_ int, n *goquery.Selection) {
@@ -239,6 +250,7 @@ func (s *SuperJob) parseRealHolidays(m time.Month, doc *goquery.Document, days s
 			holidays[num] = desc
 		}
 	})
+	log.Printf("[DEBUG] parser/superjob %s: found holidays: %#v", m, preHolidays)
 
 	resDays := make(store.Days, len(days))
 	for num, day := range days {
@@ -259,6 +271,8 @@ func (s *SuperJob) parseRealHolidays(m time.Month, doc *goquery.Document, days s
 	return resDays
 }
 
+// parseSummary парсит описание праздника, на SuperJob для каждого праздника может быть указано несколько дней.
+// Ключ возвращаемого map — номер дня, значение — название праздника.
 func (s *SuperJob) parseSummary(m time.Month, n *goquery.Selection) map[int]string {
 	if n.Length() == 0 {
 		return nil

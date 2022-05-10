@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
+	"github.com/nvkalinin/business-calendar/log"
 	"github.com/nvkalinin/business-calendar/store"
 	"github.com/nvkalinin/business-calendar/store/engine"
 )
@@ -61,6 +61,7 @@ func (s *Server) Run() error {
 		IdleTimeout:       s.Opts.IdleTimeout,
 	}
 
+	log.Printf("[INFO] starting web server at %s", s.Opts.Listen)
 	if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
 		return fmt.Errorf("cannot run rest server: %w", err)
 	}
@@ -203,13 +204,13 @@ func dayParam(r *http.Request) (int, error) {
 }
 
 func (s *Server) backupCtrl(w http.ResponseWriter, r *http.Request) {
-	// Подедрживается только резервное копирование bolt.
+	// Поддерживается только резервное копирование bolt.
 	// Для поддержки бекапа произвольных хранилищ нужно сделать экспорт/импорт через отдельный формат.
 	// Практической необходимости в этом нет.
 
 	boltStore, isBolt := s.Store.(*engine.Bolt)
 	if !isBolt {
-		sendErrorJson(w, 500, "opnly bolt supports backup")
+		sendErrorJson(w, 500, "only bolt supports backup")
 		return
 	}
 
@@ -242,6 +243,7 @@ func (s *Server) syncCtrl(w http.ResponseWriter, r *http.Request) {
 		sendErrorJson(w, 400, "'y' param is required")
 		return
 	}
+	log.Printf("[DEBUG] requested years to sync: %v", yStr)
 
 	years := make([]int, len(yStr))
 	for i, v := range yStr {
@@ -252,9 +254,11 @@ func (s *Server) syncCtrl(w http.ResponseWriter, r *http.Request) {
 		}
 		years[i] = y
 	}
+	log.Printf("[DEBUG] requested years to sync (after parsing): %v", years)
 
 	res := make(map[int]string)
 	for _, y := range years {
+		log.Printf("[INFO] syncing year %d...", y)
 		err := s.Updater.UpdateCalendar(y)
 		if err != nil {
 			res[y] = fmt.Sprintf("error: %v", err)
@@ -262,6 +266,7 @@ func (s *Server) syncCtrl(w http.ResponseWriter, r *http.Request) {
 			res[y] = "ok"
 		}
 	}
+	log.Printf("[DEBUG] sync result: %+v", res)
 
 	sendJsonResponse(w, res)
 }
@@ -300,7 +305,7 @@ func sendErrorJson(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	restErr := &struct{
+	restErr := &struct {
 		Msg string `json:"msg"`
 	}{msg}
 

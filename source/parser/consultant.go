@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/nvkalinin/business-calendar/log"
 	"github.com/nvkalinin/business-calendar/store"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -38,6 +38,7 @@ func (c *Consultant) getBaseURL() string {
 	return "https://www.consultant.ru"
 }
 
+// getCalendarPage делает запрос к странице календаря за год <y> и возвращает DOM-дерево страницы.
 func (c *Consultant) getCalendarPage(y int) (*goquery.Document, error) {
 	url := fmt.Sprintf("%s/law/ref/calendar/proizvodstvennye/%d/", c.getBaseURL(), y)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -45,6 +46,7 @@ func (c *Consultant) getCalendarPage(y int) (*goquery.Document, error) {
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
+	log.Printf("[DEBUG] parser/consultant year %d request: URL=%s, %#v", y, url, req)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
@@ -55,6 +57,7 @@ func (c *Consultant) getCalendarPage(y int) (*goquery.Document, error) {
 			log.Printf("[WARN] parser/consultant cannot close response: %+v", err)
 		}
 	}()
+	log.Printf("[DEBUG] parser/consultant year %d response: %#v", y, resp)
 
 	dom, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -63,11 +66,10 @@ func (c *Consultant) getCalendarPage(y int) (*goquery.Document, error) {
 	return dom, nil
 }
 
+// findMonths находит в DOM страницы календари всех месяцев и возвращает их DOM-поддеревья.
 func (*Consultant) findMonths(doc *goquery.Document) map[time.Month]*goquery.Selection {
 	tables := doc.Find("table.cal")
-	if tables.Length() != 12 {
-		log.Printf("[WARN] parser/consultant expected 12 months, found %d", tables.Length())
-	}
+	log.Printf("[DEBUG] parser/consultant found %d month nodes", tables.Length())
 
 	byMonth := make(map[time.Month]*goquery.Selection, 12)
 	for i := range tables.Nodes {
@@ -100,13 +102,11 @@ func (*Consultant) findMonths(doc *goquery.Document) map[time.Month]*goquery.Sel
 	return byMonth
 }
 
+// findDays находит в DOM-дереве календаря одного месяца все дни и возвращает их описания.
 func (c *Consultant) findDays(n *goquery.Selection, m time.Month, y int) store.Days {
 	maxDays := daysInMonth(y, m)
-
 	dayNodes := n.Find("td:not(.inactively)")
-	if dayNodes.Length() != maxDays {
-		log.Printf("[WARN] parser/consultant %s: expected %d days, found %d", m, maxDays, dayNodes.Length())
-	}
+	log.Printf("[DEBUG] parser/consultant found %d day nodes in %s", dayNodes.Length(), m)
 
 	days := make(store.Days, maxDays)
 	for i := range dayNodes.Nodes {
@@ -154,6 +154,10 @@ func (c *Consultant) findDays(n *goquery.Selection, m time.Month, y int) store.D
 		}
 
 		days[num] = day
+	}
+
+	if len(days) != maxDays {
+		log.Printf("[WARN] parser/consultant %s: expected %d days, found %d", m, maxDays, len(days))
 	}
 
 	return days

@@ -3,9 +3,10 @@ package calendar
 import (
 	"context"
 	"fmt"
-	"log"
+	"reflect"
 	"time"
 
+	"github.com/nvkalinin/business-calendar/log"
 	"github.com/nvkalinin/business-calendar/store"
 )
 
@@ -37,8 +38,10 @@ func NewProcessor(opts ProcOpts) *Processor {
 	}
 }
 
-// DoUpdates раз в сутки (UpdateAt) обновляет календари за текущий и следующий год.
+// RunUpdates раз в сутки (UpdateAt) обновляет календари за текущий и следующий год.
 func (p *Processor) RunUpdates() {
+	log.Printf("[INFO] calendar/proc starting daily sync at %s", p.UpdateAt.Format("15:04:05"))
+
 	t := time.NewTimer(p.untilNextRun())
 	for {
 		select {
@@ -63,7 +66,7 @@ func (p *Processor) Shutdown(ctx context.Context) error {
 				return nil
 			}
 		case <-ctx.Done():
-			log.Printf("[WARN] calendar.Proc shutdown timeout")
+			log.Printf("[WARN] calendar/proc shutdown timeout")
 			return ctx.Err()
 		}
 	}
@@ -88,10 +91,12 @@ func (p *Processor) untilNextRun() time.Duration {
 func (p *Processor) UpdateCurrentYears() {
 	y := time.Now().Year()
 
+	log.Printf("[INFO] calendar/proc daily sync, year %d...", y)
 	if err := p.UpdateCalendar(y); err != nil {
 		log.Printf("[WARN] calendar/proc cannot update %d: %+v", y, err)
 	}
 
+	log.Printf("[INFO] calendar/proc daily sync, year %d...", y+1)
 	if err := p.UpdateCalendar(y + 1); err != nil {
 		log.Printf("[WARN] calendar/proc cannot update %d: %+v", y+1, err)
 	}
@@ -115,6 +120,7 @@ func (p *Processor) MakeCalendar(y int) store.Months {
 	cal := make(store.Months, 12)
 
 	for i, src := range p.Src {
+		log.Printf("[DEBUG] calendar/proc make calendar y=%d, src=%d (%s)", y, i, reflect.TypeOf(src))
 		months, err := src.GetYear(y)
 		if err != nil {
 			log.Printf("[WARN] calendar/proc skipping source %d (%T), error: %+v", i, src, err)
