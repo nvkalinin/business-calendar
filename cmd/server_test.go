@@ -29,7 +29,7 @@ func TestServerCmd(t *testing.T) {
 func TestServerCmd_syncOnStart(t *testing.T) {
 	_, a, port := newApp(t, func(cmd *Server) {
 		cmd.SyncOnStart = []string{"2021", "current", "next"}
-		cmd.Store.Override = "testdata/override.yml"
+		cmd.Source.Override = "testdata/override.yml"
 	})
 	defer a.shutdown()
 
