@@ -39,7 +39,7 @@ var (
 
 type Server struct {
 	SyncAt      string   `long:"sync-at" env:"SYNC_AT" value-name:"hh:mm[:ss]" description:"В какое время синхронизировать производственный календарь со всеми источниками. Обновление происходит один раз в сутки. Если не указано, то автоматическое обновление отключено."`
-	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следующий год. 'none' — отключить синхронизацию при запуске."`
+	SyncOnStart []string `long:"sync-on-start" env:"SYNC_ON_START" env-delim:"," value-name:"year" default:"current" default:"next" description:"За какие годы синхронизировать календарь при запуске программы. Можно указывать числа, 'current' — текущий год, 'next' — следующий год. 'none' — отключить синхронизацию при запуске."`
 
 	Web struct {
 		Listen      string `long:"listen" env:"LISTEN" value-name:"addr" default:"0.0.0.0:80" description:"Сетевой адрес для веб-сервера."`
